@@ -4,14 +4,13 @@ exports.addUser = async(req,res)=>{
     const user = await User.create(req.body);
     res.json(user)
 }
-
   exports.updateUser = async (req, res) => {
     const { userId } = req.params;
     const { name, email } = req.body;
   
     try {
       const updatedUser = await User.findOneAndUpdate(
-        { userId: userId }, 
+        { _id: userId },
         { name, email },
         { new: true }
       );
@@ -42,10 +41,11 @@ exports.addUser = async(req,res)=>{
       res.status(500).json({ message: 'Failed to delete user' });
     }
   };
+
   exports.getUserById = async (req, res) => {
     const { id } = req.params;
     try {
-        const user = await User.findOne({ userId: id }); 
+        const user = await User.findOne({ userId: id }); // עדכן לפי userId
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
