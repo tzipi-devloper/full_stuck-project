@@ -1,115 +1,149 @@
 import { useState } from 'react';
-import { useForm, SubmitHandler } from "react-hook-form";
-import { Box, TextField, Button, Typography, Paper, Snackbar, Alert } from '@mui/material';
+import {
+  Box, TextField, Button, Typography, Paper, Snackbar, Alert, Link
+} from '@mui/material';
+import { useForm, SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import schema from './AuthSchema';
-import type {User} from './authTypes';
-import { useCreateUserMutation } from './authAPI';
+import { signUpSchema, signInSchema } from './AuthSchema';
+import type { SignUpInput, SignInInput } from './authTypes';
+import { useCreateUserMutation, useSignInMutation } from './authAPI';
 const AuthForm = () => {
-    const [createUser] = useCreateUserMutation(); 
-    const { register, handleSubmit, reset, formState: { errors } } = useForm<User>({
-        mode: 'onChange',
-        resolver: zodResolver(schema),
-    });
-    const [openSnackbar, setOpenSnackbar] = useState<boolean>(false);
-    const onSubmit: SubmitHandler<User> = async (data) => {
-        try {
-            const { confirmPassword, ...dataWithoutConfirmPassword } = data;
-            console.log(dataWithoutConfirmPassword);
-            const result = await createUser(dataWithoutConfirmPassword).unwrap();
-            console.log('User created successfully:', result);
-            setOpenSnackbar(true); 
-        } catch (error) {
-            console.error('Error creating user:', error);
-            alert('שגיאה ביצירת המשתמש');
-        }
-        reset(); 
-    };
-    const handleCloseSnackbar = (event?: React.SyntheticEvent | Event, reason?: string) => {
-        if (reason === 'clickaway') {
-            return;
-        }
-        setOpenSnackbar(false);
-    };
-    return (
-        <Box
-            sx={{
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-                height: '100vh',
-                backgroundColor: '#f0f2f5'
-            }}
-        >
-            <Paper elevation={3} sx={{ padding: 3, width: '400px' }}>
-                <Typography variant="h5" component="h1" gutterBottom>
-                    Registration Form
-                </Typography>
-                <form onSubmit={handleSubmit(onSubmit)}>
-                    <TextField
-                        fullWidth
-                        label="Username"
-                        variant="outlined"
-                        margin="normal"
-                        {...register("name")}
-                    />
-                    {errors.name && <p style={{ color: "red" }}>{errors.name.message}</p>}
-                    <TextField
-                        fullWidth
-                        label="Email"
-                        variant="outlined"
-                        margin="normal"
-                        type="email"
-                        {...register("email")}
-                    />
-                    {errors.email && <p style={{ color: "red" }}>{errors.email.message}</p>}
-                    <TextField
-                        fullWidth
-                        label="phone"
-                        variant="outlined"
-                        margin="normal"
-                        type="tel"
-                        {...register("phone")}
-                    />
-                    {errors.phone && <p style={{ color: "red" }}>{errors.phone.message}</p>}
-                    <TextField
-                        fullWidth
-                        label="Password"
-                        variant="outlined"
-                        margin="normal"
-                        type="password"
-                        {...register("password")}
-                    />
-                    {errors.password && <p style={{ color: "red" }}>{errors.password.message}</p>}
-                    <TextField
-                        fullWidth
-                        label="Confirm Password"
-                        variant="outlined"
-                        margin="normal"
-                        type="password"
-                        {...register("confirmPassword")}
-                    />
-                     {errors.confirmPassword && <p style={{ color: "red" }}>{errors.confirmPassword.message}</p>}
-                  
-                    <Button
-                        type="submit"
-                        variant="contained"
-                        color="primary"
-                        fullWidth
-                        sx={{ marginTop: 2 }}
-                    >
-                        Register
-                    </Button>
-                </form>
-            </Paper>
+  const [mode, setMode] = useState<'signIn' | 'signUp'>('signIn');
+  const [createUser] = useCreateUserMutation();
+  const [signIn] = useSignInMutation();
+  const [openSnackbar, setOpenSnackbar] = useState(false);
+  const [errorSnackbar, setErrorSnackbar] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
 
-            <Snackbar open={openSnackbar} autoHideDuration={6000} onClose={handleCloseSnackbar}>
-                <Alert onClose={handleCloseSnackbar} severity="success" sx={{ width: '100%' }}>
-                    The user has been created successfully!
-                </Alert>
-            </Snackbar>
-        </Box>
-    );
+  const signUpForm = useForm<SignUpInput>({
+    mode: 'onChange',
+    resolver: zodResolver(signUpSchema),
+  });
+
+  const signInForm = useForm<SignInInput>({
+    mode: 'onChange',
+    resolver: zodResolver(signInSchema),
+  });
+  const isSignUp = mode === 'signUp';
+  const onSubmit: SubmitHandler<SignUpInput | SignInInput> = async (data) => {
+    try {
+      if (isSignUp) {
+        const { confirmPassword, ...userData } = data as SignUpInput;
+        await createUser(userData).unwrap();
+      } else {
+        const { email, password } = data as SignInInput;
+        await signIn({ email, password }).unwrap();
+      }
+
+      setOpenSnackbar(true);
+      isSignUp ? signUpForm.reset() : signInForm.reset();
+    } catch (error: any) {
+      console.error("Error:", error);
+      setErrorMessage(error?.data?.message || "משהו השתבש, נסה שוב.");
+      setErrorSnackbar(true);
+    }
+  };
+
+  const toggleMode = () => {
+    setMode(prev => (prev === 'signUp' ? 'signIn' : 'signUp'));
+    signUpForm.reset();
+    signInForm.reset();
+  };
+
+  return (
+    <Box sx={{
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+      height: '100vh',
+      backgroundColor: '#f0f2f5'
+    }}>
+      <Paper elevation={3} sx={{ padding: 3, width: '400px' }}>
+        <Typography variant="h5" component="h1" gutterBottom>
+          {isSignUp ? 'Sign Up' : 'Sign In'}
+        </Typography>
+
+        {isSignUp ? (
+          <form onSubmit={signUpForm.handleSubmit(onSubmit)}>
+            <TextField
+              fullWidth label="Name" margin="normal"
+              {...signUpForm.register("name")}
+              error={!!signUpForm.formState.errors.name}
+              helperText={signUpForm.formState.errors.name?.message}
+            />
+            <TextField
+              fullWidth label="Email" margin="normal" type="email"
+              {...signUpForm.register("email")}
+              error={!!signUpForm.formState.errors.email}
+              helperText={signUpForm.formState.errors.email?.message}
+            />
+            <TextField
+              fullWidth label="Phone" margin="normal"
+              {...signUpForm.register("phone")}
+              error={!!signUpForm.formState.errors.phone}
+              helperText={signUpForm.formState.errors.phone?.message}
+            />
+            <TextField
+              fullWidth label="Password" margin="normal" type="password"
+              {...signUpForm.register("password")}
+              error={!!signUpForm.formState.errors.password}
+              helperText={signUpForm.formState.errors.password?.message}
+              autoComplete="new-password"
+            />
+            <TextField
+              fullWidth label="Confirm Password" margin="normal" type="password"
+              {...signUpForm.register("confirmPassword")}
+              error={!!signUpForm.formState.errors.confirmPassword}
+              helperText={signUpForm.formState.errors.confirmPassword?.message}
+              autoComplete="new-password"
+            />
+            <Button type="submit" variant="contained" color="primary" fullWidth sx={{ mt: 2 }}>
+              Register
+            </Button>
+          </form>
+        ) : (
+          <form onSubmit={signInForm.handleSubmit(onSubmit)}>
+            <TextField
+              fullWidth label="Email" margin="normal" type="email"
+              {...signInForm.register("email")}
+              error={!!signInForm.formState.errors.email}
+              helperText={signInForm.formState.errors.email?.message}
+            />
+            <TextField
+              fullWidth label="Password" margin="normal" type="password"
+              {...signInForm.register("password")}
+              error={!!signInForm.formState.errors.password}
+              helperText={signInForm.formState.errors.password?.message}
+              autoComplete="current-password"
+            />
+            <Button type="submit" variant="contained" color="primary" fullWidth sx={{ mt: 2 }}>
+              Sign In
+            </Button>
+          </form>
+        )}
+
+        <Typography variant="body2" align="center" sx={{ mt: 2 }}>
+          {isSignUp ? "Already have an account?" : "Don't have an account?"}
+          <Link onClick={toggleMode} sx={{ cursor: 'pointer', ml: 1 }}>
+            {isSignUp ? "Sign In" : "Sign Up"}
+          </Link>
+        </Typography>
+      </Paper>
+
+      <Snackbar open={openSnackbar} autoHideDuration={6000} onClose={() => setOpenSnackbar(false)}>
+        <Alert onClose={() => setOpenSnackbar(false)} severity="success" sx={{ width: '100%' }}>
+          {isSignUp ? 'User registered successfully!' : 'Signed in successfully!'}
+        </Alert>
+      </Snackbar>
+
+      <Snackbar open={errorSnackbar} autoHideDuration={6000} onClose={() => setErrorSnackbar(false)}>
+        <Alert onClose={() => setErrorSnackbar(false)} severity="error" sx={{ width: '100%' }}>
+          {errorMessage}
+        </Alert>
+      </Snackbar>
+    </Box>
+  );
 };
 
 export default AuthForm;
+

@@ -2,9 +2,11 @@ export interface User {
     name: string;
     email: string;
     password: string;
-    confirmPassword: string;
     phone:string;
 }
 
-type UserWithoutConfirmPassword = Omit<User, 'confirmPassword'>;
+export type SignUpInput = User & {
+  confirmPassword: string;
+};
 
+export type SignInInput = Pick<User, 'email' | 'password'>;

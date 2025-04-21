@@ -1,11 +1,12 @@
-const express = require("express")
-const router = express.Router()
-const User = require("../models/users");
-const {addUser,updateUser,deleteUser,getUserById} = require("../controllers/Users");
+const express = require("express");
+const router = express.Router();
+const {  addUser, updateUser, deleteUser, getUserById } = require("../controllers/users");
 
-router.post('/', addUser);
-router.delete('/:userId', deleteUser);
-router.put('/:userId', updateUser);
-router.get('/:Id', getUserById);
+// נתיבים לפונקציות
+router.post('/', addUser); // הוספת משתמש חדש
+router.delete('/:userId', deleteUser); // מחיקת משתמש
+router.put('/:userId', updateUser); // עדכון משתמש
+router.get('/:id', getUserById); // קבלת משתמש לפי ID
 
-module.exports = router
+
+module.exports = router;

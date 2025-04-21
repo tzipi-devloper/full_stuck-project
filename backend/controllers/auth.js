@@ -1,0 +1,22 @@
+const User = require('../models/users');
+exports.signIn = async (req, res) => {
+    console.log('SignIn request received:', req.body);
+    const { email, password } = req.body; 
+
+    try {
+        const user = await User.findOne({ password }); 
+        if (!user) {
+            return res.status(400).json({ message: "User not found" });
+        }
+
+        if (user.email !== email) {
+            return res.status(400).json({ message: "Invalid credentials" });
+        }
+
+        res.status(200).json({ message: "Sign in successful", user });
+    
+    } catch (error) {
+        console.error('Error signing in:', error);
+        res.status(500).json({ message: "Internal server error" });
+    }
+};
