@@ -1,24 +1,34 @@
 const User = require('../models/users');
 const jwt = require('jsonwebtoken');
-
+const bcrypt = require("bcrypt");
 // פונקציה להוספת משתמש
 exports.addUser = async (req, res) => {
-    const user = await User.create(req.body);
-    res.json(user);
+    const {username, password,email, phone} = req.body
+        const foundUser = await User.findOne({ email }).lean();
+        if (foundUser) {
+            return res.status(401).json({ message: 'קיים משתמש עם אותו מייל' })
+            }
+        const hashedPwd = await bcrypt.hash(password, 10)
+        const userObject= {username,email,phone,password:hashedPwd}
+        const user = await User.create(userObject)
+        if (user) {
+            console.log("no success");
+        return res.status(201).json({message:`New user ${user.username}
+        created` })
+        } else {
+          console.log("success")
+        return res.status(400).json({message:'Invalid user received'})
+        }
 };
 
-
-
-
-// פונקציה לעדכון משתמש
 exports.updateUser = async (req, res) => {
     const { userId } = req.params;
     const { name, email } = req.body;
 
     try {
         const updatedUser = await User.findOneAndUpdate(
-            { _id: userId }, 
-            { name, email }, 
+            { _id: userId },
+            { name, email },
             { new: true }
         );
 

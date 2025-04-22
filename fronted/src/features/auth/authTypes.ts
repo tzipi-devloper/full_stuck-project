@@ -5,8 +5,6 @@ export interface User {
     phone:string;
 }
 
-export type SignUpInput = User & {
-  confirmPassword: string;
-};
+export type SignUpInput = User;
 
 export type SignInInput = Pick<User, 'email' | 'password'>;

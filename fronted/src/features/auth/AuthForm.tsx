@@ -28,7 +28,7 @@ const AuthForm = () => {
   const onSubmit: SubmitHandler<SignUpInput | SignInInput> = async (data) => {
     try {
       if (isSignUp) {
-        const { confirmPassword, ...userData } = data as SignUpInput;
+        const userData = data as SignUpInput; 
         await createUser(userData).unwrap();
       } else {
         const { email, password } = data as SignInInput;
@@ -90,13 +90,7 @@ const AuthForm = () => {
               helperText={signUpForm.formState.errors.password?.message}
               autoComplete="new-password"
             />
-            <TextField
-              fullWidth label="Confirm Password" margin="normal" type="password"
-              {...signUpForm.register("confirmPassword")}
-              error={!!signUpForm.formState.errors.confirmPassword}
-              helperText={signUpForm.formState.errors.confirmPassword?.message}
-              autoComplete="new-password"
-            />
+          
             <Button type="submit" variant="contained" color="primary" fullWidth sx={{ mt: 2 }}>
               Register
             </Button>
