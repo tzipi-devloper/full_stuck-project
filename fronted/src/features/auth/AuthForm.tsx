@@ -1,21 +1,24 @@
 import { useState } from 'react';
-import {
-  Box, TextField, Button, Typography, Paper, Snackbar, Alert, Link
-} from '@mui/material';
+import { TextField, Button, Typography, Paper, Snackbar, Alert, Link } from '@mui/material';
 import { useForm, SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { signUpSchema, signInSchema } from './AuthSchema';
-import type { SignUpInput, SignInInput } from './authTypes';
-import { useCreateUserMutation, useSignInMutation } from './authAPI';
+import type { SignInInput, User, userInfo } from './authTypes';
+import { useCreateUserMutation, useDeleteUserMutation, useSignInMutation } from './authAPI';
+import { setCookie, removeCookie } from 'typescript-cookie';
+import { jwtDecode } from "jwt-decode";
+import { useDispatch } from 'react-redux';
+import { setUser, clearUser } from './authStateSlice'; 
+
 const AuthForm = () => {
+  const dispatch = useDispatch(); 
   const [mode, setMode] = useState<'signIn' | 'signUp'>('signIn');
   const [createUser] = useCreateUserMutation();
   const [signIn] = useSignInMutation();
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [errorSnackbar, setErrorSnackbar] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
-
-  const signUpForm = useForm<SignUpInput>({
+  const signUpForm = useForm<User>({
     mode: 'onChange',
     resolver: zodResolver(signUpSchema),
   });
@@ -24,24 +27,37 @@ const AuthForm = () => {
     mode: 'onChange',
     resolver: zodResolver(signInSchema),
   });
+
   const isSignUp = mode === 'signUp';
-  const onSubmit: SubmitHandler<SignUpInput | SignInInput> = async (data) => {
+
+  const onSubmit: SubmitHandler<User | SignInInput> = async (data: User | SignInInput) => {
     try {
+      let response: { token: string } | undefined;
+      
       if (isSignUp) {
-        const userData = data as SignUpInput; 
-        await createUser(userData).unwrap();
+        response = await createUser(data).unwrap();
       } else {
         const { email, password } = data as SignInInput;
-        await signIn({ email, password }).unwrap();
+        response = await signIn({ email, password }).unwrap();
       }
 
+      const token: string | undefined = response?.token;
+      if (!token) throw new Error("Token is undefined");
+
+      setCookie('token', token, { expires: 1, path: '/' });
+      const decoded = jwtDecode<userInfo>(token);
+      console.log("Decoded:", decoded);
+      dispatch(setUser(decoded));
       setOpenSnackbar(true);
       isSignUp ? signUpForm.reset() : signInForm.reset();
     } catch (error: any) {
       console.error("Error:", error);
-      setErrorMessage(error?.data?.message || "משהו השתבש, נסה שוב.");
+      setErrorMessage(error?.data?.message || error?.message || "משהו השתבש, נסה שוב.");
       setErrorSnackbar(true);
     }
+  };
+  const getCookie = (name: string) => {
+    return document.cookie.split('; ').find(row => row.startsWith(name + '='))?.split('=')[1];
   };
 
   const toggleMode = () => {
@@ -51,13 +67,7 @@ const AuthForm = () => {
   };
 
   return (
-    <Box sx={{
-      display: 'flex',
-      justifyContent: 'center',
-      alignItems: 'center',
-      height: '100vh',
-      backgroundColor: '#f0f2f5'
-    }}>
+    <div>
       <Paper elevation={3} sx={{ padding: 3, width: '400px' }}>
         <Typography variant="h5" component="h1" gutterBottom>
           {isSignUp ? 'Sign Up' : 'Sign In'}
@@ -65,57 +75,19 @@ const AuthForm = () => {
 
         {isSignUp ? (
           <form onSubmit={signUpForm.handleSubmit(onSubmit)}>
-            <TextField
-              fullWidth label="Name" margin="normal"
-              {...signUpForm.register("name")}
-              error={!!signUpForm.formState.errors.name}
-              helperText={signUpForm.formState.errors.name?.message}
-            />
-            <TextField
-              fullWidth label="Email" margin="normal" type="email"
-              {...signUpForm.register("email")}
-              error={!!signUpForm.formState.errors.email}
-              helperText={signUpForm.formState.errors.email?.message}
-            />
-            <TextField
-              fullWidth label="Phone" margin="normal"
-              {...signUpForm.register("phone")}
-              error={!!signUpForm.formState.errors.phone}
-              helperText={signUpForm.formState.errors.phone?.message}
-            />
-            <TextField
-              fullWidth label="Password" margin="normal" type="password"
-              {...signUpForm.register("password")}
-              error={!!signUpForm.formState.errors.password}
-              helperText={signUpForm.formState.errors.password?.message}
-              autoComplete="new-password"
-            />
-          
-            <Button type="submit" variant="contained" color="primary" fullWidth sx={{ mt: 2 }}>
-              Register
-            </Button>
+            <TextField fullWidth label="Name" margin="normal" {...signUpForm.register("name")} error={!!signUpForm.formState.errors.name} helperText={signUpForm.formState.errors.name?.message} />
+            <TextField fullWidth label="Email" margin="normal" type="email" {...signUpForm.register("email")} error={!!signUpForm.formState.errors.email} helperText={signUpForm.formState.errors.email?.message} />
+            <TextField fullWidth label="Phone" margin="normal" {...signUpForm.register("phone")} error={!!signUpForm.formState.errors.phone} helperText={signUpForm.formState.errors.phone?.message} />
+            <TextField fullWidth label="Password" margin="normal" type="password" {...signUpForm.register("password")} error={!!signUpForm.formState.errors.password} helperText={signUpForm.formState.errors.password?.message} autoComplete="new-password" />
+            <Button type="submit" variant="contained" color="primary" fullWidth sx={{ mt: 2 }}>Register</Button>
           </form>
         ) : (
           <form onSubmit={signInForm.handleSubmit(onSubmit)}>
-            <TextField
-              fullWidth label="Email" margin="normal" type="email"
-              {...signInForm.register("email")}
-              error={!!signInForm.formState.errors.email}
-              helperText={signInForm.formState.errors.email?.message}
-            />
-            <TextField
-              fullWidth label="Password" margin="normal" type="password"
-              {...signInForm.register("password")}
-              error={!!signInForm.formState.errors.password}
-              helperText={signInForm.formState.errors.password?.message}
-              autoComplete="current-password"
-            />
-            <Button type="submit" variant="contained" color="primary" fullWidth sx={{ mt: 2 }}>
-              Sign In
-            </Button>
+            <TextField fullWidth label="Email" margin="normal" type="email" {...signInForm.register("email")} error={!!signInForm.formState.errors.email} helperText={signInForm.formState.errors.email?.message} />
+            <TextField fullWidth label="Password" margin="normal" type="password" {...signInForm.register("password")} error={!!signInForm.formState.errors.password} helperText={signInForm.formState.errors.password?.message} autoComplete="current-password" />
+            <Button type="submit" variant="contained" color="primary" fullWidth sx={{ mt: 2 }}>Sign In</Button>
           </form>
         )}
-
         <Typography variant="body2" align="center" sx={{ mt: 2 }}>
           {isSignUp ? "Already have an account?" : "Don't have an account?"}
           <Link onClick={toggleMode} sx={{ cursor: 'pointer', ml: 1 }}>
@@ -135,9 +107,8 @@ const AuthForm = () => {
           {errorMessage}
         </Alert>
       </Snackbar>
-    </Box>
+    </div>
   );
 };
 
 export default AuthForm;
-

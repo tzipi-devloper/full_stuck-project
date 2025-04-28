@@ -1,18 +1,37 @@
-import { RouterProvider } from 'react-router'
-import Routes from './routes/Routes';
-import './App.css'
-import { Provider } from 'react-redux';
-import store from './app/store';
+import { useEffect } from 'react';
+import { RouterProvider } from 'react-router';
+import router from './routes/Routes';
+import './App.css';
+import { Provider, useDispatch } from 'react-redux';
+import store from './app/store'; // מייבא את ה-Redux store
+import { getCookie } from 'typescript-cookie';
+import { setUser } from './features/auth/authStateSlice';
+import { jwtDecode } from 'jwt-decode';
+import { userInfo } from './features/auth/authTypes'; 
 
 function App() {
-  return (
-    <>
-    <Provider store={store}>
-    <RouterProvider router={Routes}/> 
-    </Provider>
-     
+  const dispatch = useDispatch();
 
-    </>
-  )
+  useEffect(() => {
+    const token = getCookie('token'); 
+    if (token) {
+      try {
+        const decoded: userInfo = jwtDecode(token);
+        dispatch(setUser(decoded)); 
+      } catch (error) {
+        console.error("Failed to decode token:", error);
+      }
+    }
+  }, [dispatch]);
+
+  return (
+    <RouterProvider router={router} />
+  );
 }
-export default App
+export default function AppWithProvider() {
+  return (
+    <Provider store={store}> 
+      <App />
+    </Provider>
+  );
+}

@@ -1,12 +1,14 @@
 const express = require("express");
 const router = express.Router();
-const {  addUser, updateUser, deleteUser, getUserById } = require("../controllers/users");
+const { addUser, updateUser, deleteUser, getUserById } = require("../controllers/users");
 
-// נתיבים לפונקציות
-router.post('/', addUser); // הוספת משתמש חדש
-router.delete('/:userId', deleteUser); // מחיקת משתמש
-router.put('/:userId', updateUser); // עדכון משתמש
-router.get('/:id', getUserById); // קבלת משתמש לפי ID
+// ייבוא האמצעי לאימות טוקן
+const verifyJWT = require('../middleware/verifyJWT');
 
+// שמירה על האימות לכל בקשה שדורשת גישה
+router.post('/', addUser); 
+router.delete('/:userId', verifyJWT, deleteUser); 
+router.put('/:userId', verifyJWT, updateUser); 
+router.get('/:id', verifyJWT, getUserById); 
 
 module.exports = router;
