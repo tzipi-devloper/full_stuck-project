@@ -1,12 +1,12 @@
 const express = require('express');
 const mongoose = require('mongoose');
-const userRoutes = require('./routes/users'); // ייבוא הנתיבים
+const userRoutes = require('./routes/users'); 
 const authRoutes = require("./routes/auth")
 const dotenv = require('dotenv');
 const cors = require('cors');
 const app = express();
-const PORT = process.env.PORT || 5555;
 
+const PORT = process.env.PORT || 5557;
 dotenv.config();
 
 app.use(cors());
@@ -16,7 +16,6 @@ mongoose.connect(process.env.CONECTION_URL)
     .then(() => console.log('MongoDB connected'))
     .catch(err => console.error('MongoDB connection error:', err));
 
-// חיבור הנתיבים ל-Express
 app.use('/api/users', userRoutes);
 app.use('/api/auth', authRoutes); 
 app.listen(PORT, () => {
