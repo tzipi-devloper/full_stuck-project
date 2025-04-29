@@ -1,12 +1,16 @@
 const express = require('express');
 const mongoose = require('mongoose');
-const userRoutes = require('./routes/users'); 
+const userRoutes = require('./routes/users'); // ייבוא הנתיבים
 const authRoutes = require("./routes/auth")
 const dotenv = require('dotenv');
+const nodemailer = require('nodemailer');
 const cors = require('cors');
 const app = express();
+const competitionRoutes = require("./routes/competitions");
 
-const PORT = process.env.PORT || 5557;
+
+
+const PORT = process.env.PORT || 5551;
 dotenv.config();
 
 app.use(cors());
@@ -18,6 +22,7 @@ mongoose.connect(process.env.CONECTION_URL)
 
 app.use('/api/users', userRoutes);
 app.use('/api/auth', authRoutes); 
+app.use('/api/competitions', competitionRoutes);
 app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
 });

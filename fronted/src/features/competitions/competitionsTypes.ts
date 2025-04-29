@@ -1,15 +1,16 @@
 export interface CompetitionItem {
-    id: number;
-    name: string;
-    score: number;
-    category: string;
-    file: string;
+  _id: string;
+  name: string;
+  score: number;
+  category: string;
+  file: string;
 }
 
-export const Category = {
-    Pictures: "pictures",
-    Recipes: "recipes",
-    Exams: "exams"
-} as const;
+export interface Category {
+  pictures: string;
+  recipes: string; 
+  exams: string;
+}
 
-export type CategoryKeys = keyof typeof Category;
+// הגדרת טיפוס עבור מפתחות הקטגוריות
+export type CategoryKeys = keyof Category;

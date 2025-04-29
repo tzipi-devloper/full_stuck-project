@@ -1,20 +1,29 @@
-import { useSelector } from "react-redux"
-import { selectCurrentCompetitionList } from './competitionsSlice'
+import { useSelector } from "react-redux";
+import { selectCurrentCompetition } from "../competitions/competitionsSlice";
+import { useGetCompetitionByCategoryQuery } from "./competitionsAPI";
 import CompetitionCard from "./CompetitionCard";
+import { CompetitionItem } from "./competitionsTypes";
 
 const CompetitionList = () => {
-  const currentCompetitionlist = useSelector(selectCurrentCompetitionList);
+  const selectedCategory = useSelector(selectCurrentCompetition);
+  if (!selectedCategory) {
+    // טיפול במקרה שהקטגוריה לא מוגדרת
+    return <p>שגיאה: קטגוריה לא מוגדרת</p>;
+  }
+  // const { data: competitions, isLoading, error } = useGetCompetitionsByCategoryQuery(selectedCategory);
+  const { data, error, isLoading } = useGetCompetitionByCategoryQuery(selectedCategory); 
+  if (isLoading) return <p>טוען נתונים...</p>;
+  if (error) return <p>שגיאה בשליפת נתונים</p>;
 
   return (
     <div>
-          {currentCompetitionlist.map(competitionItem => (
-                <CompetitionCard 
-                    key={competitionItem.id} 
-                    competitionItem={competitionItem} 
-                />
-            ))}          
+      {data?.map((competitionItem :CompetitionItem) => (
+        <CompetitionCard key={competitionItem._id} competitionItem={competitionItem} />
+      ))}
     </div>
-  )
-}
+  );
+};
 
-export default CompetitionList
+export default CompetitionList;
+
+
