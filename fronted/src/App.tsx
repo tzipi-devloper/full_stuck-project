@@ -5,7 +5,7 @@ import './App.css';
 import { Provider, useDispatch } from 'react-redux';
 import store from './app/store'; // מייבא את ה-Redux store
 import { getCookie } from 'typescript-cookie';
-import { setUser } from './features/auth/authStateSlice';
+import { setUser } from './features/auth/authUserSlice';
 import { jwtDecode } from 'jwt-decode';
 import { userInfo } from './features/auth/authTypes'; 
 

@@ -11,6 +11,4 @@ export interface Category {
   recipes: string; 
   exams: string;
 }
-
-// הגדרת טיפוס עבור מפתחות הקטגוריות
 export type CategoryKeys = keyof Category;

@@ -1,15 +1,18 @@
 const User = require('../models/users');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-
+const userSchema = require('../schemas/userSchema');
 exports.addUser = async (req, res) => {
   try {
     const { _id, name, password, email, phone } = req.body;
+    const validationResult = userSchema.safeParse(req.body);
+    if (!validationResult.success) {
+      return res.status(400).json({ message: validationResult.error.errors });
+    }
     const foundUser = await User.findOne({ email }).lean();
     if (foundUser) {
       return res.status(401).json({ message: 'המייל קיים על משתמש אחר' });
     }
-
     const hashedPwd = await bcrypt.hash(password, 10);
     const userObject = { _id, name, email, phone, password: hashedPwd };
     const user = await User.create(userObject);

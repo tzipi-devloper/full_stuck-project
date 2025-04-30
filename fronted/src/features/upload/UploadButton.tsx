@@ -1,5 +1,5 @@
 import { useSelector } from "react-redux";
-import { selectCurrentUser } from "../auth/authStateSlice";
+import { selectCurrentUser } from "../auth/authUserSlice";
 
 const UploadButton = () => {
   const isLoggedIn = useSelector(selectCurrentUser);

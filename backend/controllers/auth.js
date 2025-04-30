@@ -13,9 +13,9 @@ exports.signIn = async (req, res) => {
       return res.status(401).json({ message: 'הסיסמא לא תואמת' });
     }
     const userInfo = {
+      _id: foundUser._id,
       name: foundUser.name,
-      email: foundUser.email,
-      _id: foundUser._id
+      email: foundUser.email
     };
     const token = jwt.sign(userInfo, process.env.ACCESS_TOKEN_SECRET);
     return res.status(200).json({ token, message: 'User signed in successfully' });

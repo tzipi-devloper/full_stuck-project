@@ -11,7 +11,6 @@ const CompetitionCard = ({ competitionItem }: Props) => {
 
   const handleRatingChange = (newValue: number | null) => {
     setValue(newValue);
-    // TODO: Add API call to save rating
   };
 
   return (

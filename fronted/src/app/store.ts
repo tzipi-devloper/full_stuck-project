@@ -2,7 +2,7 @@ import { configureStore } from "@reduxjs/toolkit";
 import competition from '../features/competitions/competitionsSlice';
 import leaderboard from '../features/leaderboard/leaderboardSlice';
 import submissions from '../features/submissions/submissionsSlice';
-import authState from '../features/auth/authStateSlice';
+import authUserSlice from '../features/auth/authUserSlice';
 import authAPI from '../features/auth/authAPI';
 import competitionsAPI from '../features/competitions/competitionsAPI';
 
@@ -11,7 +11,7 @@ const store = configureStore({
     competition,
     leaderboard,
     submissions,
-    authState,
+    authUserSlice,
     [authAPI.reducerPath]: authAPI.reducer,
     [competitionsAPI.reducerPath]: competitionsAPI.reducer,
   },

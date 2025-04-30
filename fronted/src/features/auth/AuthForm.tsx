@@ -4,11 +4,11 @@ import { useForm, SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { signUpSchema, signInSchema } from './AuthSchema';
 import type { SignInInput, User, userInfo } from './authTypes';
-import { useCreateUserMutation, useDeleteUserMutation, useSignInMutation } from './authAPI';
-import { setCookie, removeCookie } from 'typescript-cookie';
+import { useCreateUserMutation, useSignInMutation } from './authAPI';
+import { setCookie } from 'typescript-cookie';
 import { jwtDecode } from "jwt-decode";
 import { useDispatch } from 'react-redux';
-import { setUser, clearUser } from './authStateSlice'; 
+import { setUser} from './authUserSlice'; 
 
 const AuthForm = () => {
   const dispatch = useDispatch(); 
@@ -56,16 +56,11 @@ const AuthForm = () => {
       setErrorSnackbar(true);
     }
   };
-  const getCookie = (name: string) => {
-    return document.cookie.split('; ').find(row => row.startsWith(name + '='))?.split('=')[1];
-  };
-
-  const toggleMode = () => {
+    const toggleMode = () => {
     setMode(prev => (prev === 'signUp' ? 'signIn' : 'signUp'));
     signUpForm.reset();
     signInForm.reset();
   };
-
   return (
     <div>
       <Paper elevation={3} sx={{ padding: 3, width: '400px' }}>

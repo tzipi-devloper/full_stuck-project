@@ -4,8 +4,6 @@ import AppLayout from "../components/AppLayout";
 import Footer from "../components/Footer";
 import CompetitionList from "../features/competitions/CompetitionList";
 import About from "../pages/About";
-import AuthForm from "../features/auth/AuthForm";
-
 
 const router = createBrowserRouter([
   {
