@@ -1,11 +1,9 @@
 const Competition = require('../models/competitions')
 exports.addCompetition = async (req, res) => {
   const { userId, category, score, email, file } = req.body;
-
   if (!userId || !category || !score || !email || !file) {
       return res.status(400).json({ message: 'Missing required fields' });
   }
-
   const newCompetition = new Competition({
       userId,
       category,
@@ -23,20 +21,20 @@ exports.addCompetition = async (req, res) => {
   }
 };
 
-  exports.deleteCompetition = async (req, res) => {
-      const competitionId = req.params.competitionId;
-      console.log(competitionId);
-      try {
-          const deletedCompetition = await Competition.findOneAndDelete({ _id: competitionId });
-          if (!deletedCompetition) {
-              return res.status(404).json({ message: 'Competition not found' });
-          }
-          res.json({ message: 'Competition deleted successfully' });
-      } catch (error) {
-          console.error('Failed to delete competition:', error);
-          res.status(500).json({ message: 'Failed to delete competition' });
+exports.deleteCompetition = async (req, res) => {
+  const competitionId = req.params.competitionId;
+  console.log(competitionId);
+  try {
+      const deletedCompetition = await Competition.findOneAndDelete({ _id: competitionId });
+      if (!deletedCompetition) {
+          return res.status(404).json({ message: 'Competition not found' });
       }
-  };
+      res.json({ message: 'Competition deleted successfully' });
+  } catch (error) {
+      console.error('Failed to delete competition:', error);
+      res.status(500).json({ message: 'Failed to delete competition' });
+  }
+};
   
   
 exports.getAllCompetitions = async (req, res) => {

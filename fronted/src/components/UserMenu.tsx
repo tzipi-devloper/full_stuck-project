@@ -2,12 +2,9 @@ import { useState } from 'react';
 import { Typography, Divider, Button,  DialogTitle } from '@mui/material';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import { useSelector, useDispatch } from 'react-redux';
-import { removeCookie, getCookie } from 'typescript-cookie';
-import { jwtDecode } from 'jwt-decode';
-
-import { selectCurrentUser, clearUser } from '../features/auth/authStateSlice';
+import { removeCookie } from 'typescript-cookie';
+import { selectCurrentUser, clearUser } from '../features/auth/authUserSlice';
 import { useDeleteUserMutation } from '../features/auth/authAPI';
-import { userInfo } from '../features/auth/authTypes';
 
 import { 
   StyledAvatar, 
@@ -16,7 +13,6 @@ import {
   StyledDialog, 
   StyledDialogActions, 
   StyledDialogTitleBox,
-
 } from './styled/UserMenu.styled';
 
 const UserMenu = () => {
@@ -24,7 +20,6 @@ const UserMenu = () => {
   const user = useSelector(selectCurrentUser);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const menuOpen = Boolean(anchorEl);
-
   const [deleteUser] = useDeleteUserMutation();
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
 
@@ -51,10 +46,7 @@ const UserMenu = () => {
 
   const confirmDeleteAccount = async () => {
     try {
-      const token = getCookie('token');
-      if (!token) throw new Error('User not authenticated');
-      const decoded = jwtDecode<userInfo>(token);
-      await deleteUser(decoded._id).unwrap();
+      await deleteUser(user._id).unwrap();
       removeCookie('token');
       dispatch(clearUser());
     } catch (err) {

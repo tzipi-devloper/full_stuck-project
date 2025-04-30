@@ -1,12 +1,7 @@
 import apiSlice from "./authSlice";
-import { User } from "./authTypes";
 
 const usersApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
-    getAllUsers: builder.query<User[], void>({
-      query: () => "/users",
-      providesTags: ["Users"],
-    }),
     createUser: builder.mutation({
       query: (newUser) => ({
         url: "/users",
@@ -33,7 +28,6 @@ const usersApiSlice = apiSlice.injectEndpoints({
 });
 
 export const {
-  useGetAllUsersQuery,
   useCreateUserMutation,
   useSignInMutation,
   useDeleteUserMutation,

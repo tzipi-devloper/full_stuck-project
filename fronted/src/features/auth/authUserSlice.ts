@@ -10,7 +10,7 @@ const initialState: AuthState = {
 };
 
 const authStateSlice = createSlice({
-  name: 'authState',
+  name: 'authUserSlice',
   initialState,
   reducers: {
     setUser(state, action: PayloadAction<userInfo>) {
@@ -21,6 +21,6 @@ const authStateSlice = createSlice({
     },
   },
 });
-export const selectCurrentUser = (state: RootState) => state.authState.user;
+export const selectCurrentUser = (state: RootState) => state.authUserSlice.user;
 export const { setUser, clearUser } = authStateSlice.actions;
 export default authStateSlice.reducer;

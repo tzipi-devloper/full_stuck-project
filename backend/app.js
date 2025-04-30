@@ -1,14 +1,11 @@
 const express = require('express');
 const mongoose = require('mongoose');
-const userRoutes = require('./routes/users'); // ייבוא הנתיבים
+const userRoutes = require('./routes/users'); 
 const authRoutes = require("./routes/auth")
+const competitionRoutes = require("./routes/competitions");
 const dotenv = require('dotenv');
-const nodemailer = require('nodemailer');
 const cors = require('cors');
 const app = express();
-const competitionRoutes = require("./routes/competitions");
-
-
 
 const PORT = process.env.PORT || 5551;
 dotenv.config();
